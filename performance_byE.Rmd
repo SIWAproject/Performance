@@ -1,0 +1,403 @@
+---
+title: "PERFORMANCE REPORT AGE 42"
+output:
+  flexdashboard::flex_dashboard:
+    output_dir: docs
+    orientation: rows
+    vertical_layout: scroll
+    source_code: embed
+    css: estilo.css
+    mathjax: NULL
+    self_contained: FALSE
+    logo: "Siwa-blanco-01.png"
+    #runtime: shiny
+    #navbar:
+     # - { title: "About SIWA", href: "https://siwa.bio/" }
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries, include=FALSE, cache=TRUE}
+###load libraries panels tabs####
+library(phyloseq) #
+library(DESeq2) #
+library(kableExtra) #
+library(genefilter) #
+library(microbiome) #
+library(ggplot2)  #
+library(vegan) #
+library(ggpubr) #
+library(ggplot2) #
+library(plyr)
+library(multcompView)
+
+#####Load libraries correlations####
+library(ggplot2)
+library(phyloseq)
+library(stringr)
+library(dplyr)
+
+#####Load libraries LR####
+library(tidyverse)
+library(ape)
+library(ggpubr)
+
+####Load libraries categorical histo####
+library(kableExtra)
+library(plyr)
+#library("fantaxtic")
+library(data.table)
+
+####load libraries Ratios-histo boxplots####
+library(multcompView)
+library(reshape)
+
+### OTRICAS
+library(plotly)
+library(plyr)
+library(flexdashboard)
+library(shiny)
+library(DT)
+library(stringr)
+library(rstatix)
+#library(microViz)
+library(lsr)
+library(readxl)
+
+## FUNCTIONS
+source("/Users/sebastianbedoyamazo/Documents/siwa_git/Methods-review/functions.R")
+
+```
+
+```{r All inputs SEBAS, include=FALSE}
+#open phyloseq object
+ODLEPobj345 <- readRDS("/Users/sebastianbedoyamazo/Documents/siwa_git/Reports/Projects/E345/inputdata/PhyloseqObject_E345.rds")
+
+
+original <-read.table("/Users/sebastianbedoyamazo/Documents/siwa_git/Reports/Version1.0/Input_data/performance_histo_ge_ratios_alphadiv_for_correlations.csv", check.names = FALSE, header=T, sep="\t")
+# 
+
+
+#open data-table
+## Data creada con create_full_file_for_correlations_to_analytics - Jupyter Notebook
+
+complete_sample_table <- read_excel("/Users/sebastianbedoyamazo/Documents/siwa_git/Performance/metadata_performance_test.xlsx")
+complete_sample_table <- complete_sample_table %>% rename(SampleID = fullsampleid, AnimalID = animalid...5)
+
+
+
+
+
+```
+
+
+
+# Performance + Microbiome{data-navmenu="Cross-panel Analyses"}
+Row {data-height=50}
+-----------------------------------------------------------------------
+
+Row {data-height=30}
+-----------------------------------------------------------------------
+**Correlation performance + Microbiome**
+
+Row {data-height=50}
+-----------------------------------------------------------------------
+Associations/correlations between traits that might help us better understand the **complex interactions** in this system.  
+
+Row {data-height=100}
+-----------------------------------------------------------------------
+We begin with <a href="https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient" target="_blank">Kendall</a> correlations between the top 20 most abundant microbial families and the expression of IL-10, IL-1B, and MUC-2. (Note: Correlations can be evaluated at any taxonomic level, here we chose the family level for convenience). A positive or red correlation indicates that when a taxon is increased, the expression of the correlated gene is also increased.  The opposite is true when the correlation is negative (blue).  It is important to understand that this correlation does not mean that changes in the microbiome *cause* changes in gene expression, or vice versa, only that they are moving in the same direction.  The asterisk (*) indicates that the correlation is significant.
+
+
+```{r open data 1, include=FALSE}
+# ## Data creada con create_full_file_for_correlations_to_analytics - Jupyter Notebook
+# #meta with ratios for I and C 
+# meta_exp  <- complete_sample_table
+# meta_exp345 <- subset(meta_exp, projectid == "E345")
+# 
+# 
+# 
+# #Extract taxonomy and otu table from phyloseq object
+# #Extract taxonomy and otu table from phyloseq object
+# taxonomy <-as.data.frame(tax_table(ODLEPobj345))
+# taxonomy$OTU <- row.names(taxonomy) 
+# 
+# otu_table <- as.data.frame(otu_table(ODLEPobj345))
+# otu_table$OTU<- row.names(otu_table) 
+#  
+# 
+# #filter otus and taxonomy by the samples that are present in meta_exp (not needed)
+# #otu_table <- otu_table[c(meta_exp$SampleID, "OTU")]
+# #taxonomy <- filter(taxonomy, OTU %in% otu_table$OTU)
+# 
+# ### AGGREGATE BY TAXA
+# 
+# otu_table_agg <- aggregate_otus_by_taxa(meta_exp345, otu_table, taxonomy, "Species")
+# #R le pone una X y le quita el guion al sampleid - con check.names = FALSE se arregla. SINO, correr lo sgte:
+# #names(otu_table)<-sapply(str_remove_all(colnames(otu_table),"X"),"[")
+# #names(otu_table) <- str_replace_all(colnames(otu_table),'[.]', '-')
+# 
+# otu_table <- otu_table_agg ## para que a partir de aquí sea igual
+
+
+
+
+
+
+
+
+
+
+
+
+
+meta_exp <- read_excel("/Users/sebastianbedoyamazo/Documents/siwa_git/Performance/df_metadata_age42.xlsx")
+samplesE267 <- unlist(meta_exp[meta_exp$projectid == 'E267', 'sampleid'])
+samplesE271 <- unlist(meta_exp[meta_exp$projectid == 'E271', 'sampleid'])
+samplesE345 <- unlist(meta_exp[meta_exp$projectid == 'E345', 'sampleid'])
+samplesE347 <- unlist(meta_exp[meta_exp$projectid == 'E347', 'sampleid'])
+
+
+meta_expE267 <- filter(meta_exp, projectid == "E267")
+meta_expE271 <- filter(meta_exp, projectid == "E271")
+meta_expE345 <- filter(meta_exp, projectid == "E345")
+meta_expE347 <- filter(meta_exp, projectid == "E247")
+
+
+
+
+
+otu_table <- read_excel("/Users/sebastianbedoyamazo/Documents/siwa_git/Performance/specie_rel.xlsx")
+names(otu_table)[names(otu_table) == '...1'] <- 'otu'
+otu_table <- otu_table %>% column_to_rownames(var = "otu")
+
+
+otu_tableE267 <- subset(otu_table, select = samplesE267)
+otu_tableE271 <- subset(otu_table, select = samplesE271)
+otu_tableE345 <- subset(otu_table, select = samplesE345)
+otu_tableE347 <- subset(otu_table, select = samplesE347)
+
+
+#define dataframe for analysis as otu_table
+otu_table <- otu_table
+meta_exp <- meta_exp
+#Transpose the data to have sample names on rows
+otu_table <- as.matrix(otu_table)
+otu_table <- t(otu_table)
+class(otu_table)
+
+rownames(otu_table) <-
+  sapply(str_remove_all(rownames(otu_table), "X"), "[") # porsi
+
+#rownames(otu_table) #deben ser las samples
+
+```
+
+```{r transformation 1, include=FALSE}
+#####transformation and filter for compositional data
+# calcula la proporción de ceros en cada columna de un data frame df. La función apply() se utiliza para aplicar una función a cada columna del data frame. La función que se aplica es df == 0, que compara cada valor en el data frame con cero y devuelve un vector lógico que indica si cada valor es igual a cero o no. El resultado de esta comparación es una matriz lógica con el mismo número de filas y columnas que el data frame.
+# 
+# Luego, se utiliza la función sum() junto con el argumento 2 de apply() para sumar los valores en cada columna de la matriz lógica, lo que da como resultado el número total de ceros en cada columna. Dividiendo este resultado por el número de filas en el data frame dim(df)[1], se obtiene la proporción de ceros en cada columna.
+# 
+# Finalmente, se asigna el resultado a un objeto llamado rowz. Por lo tanto, rowz será un vector que contiene la proporción de ceros en cada columna del data frame df.
+
+rowz<-apply(otu_table == 0, 2, sum)/dim(otu_table)[1] #sum over columns (OTUS)
+# dejar otus frecuentes, quitando los que están llenos de CEROS
+p <- which(rowz>0.95)
+otu_table_filtered <-otu_table[, -p]
+# colz <- apply(otu_table_filtered == 0, 1, sum)/dim(otu_table_filtered)[2]
+#pp<-which(colz>0.9)
+
+
+#  as.matrix() es una función utilizada para convertir un objeto en una matriz. En este caso, la línea de código df <- as.matrix(df) convierte el objeto df en una matriz y lo asigna de vuelta a la variable df.
+# 
+# La función as.matrix() es útil cuando se desea trabajar con una matriz en lugar de un data frame u otro tipo de objeto. Al convertir un data frame en una matriz, se pierden algunas de las características específicas de los data frames, como los nombres de columna y fila, pero se obtiene una estructura de datos más simple que se puede manipular más fácilmente con algunas funciones de R.
+# 
+# Es importante tener en cuenta que la función as.matrix() crea una copia de los datos originales, por lo que si el data frame es grande, puede requerir una cantidad significativa de memoria adicional para almacenar la matriz. Además, si el data frame original tiene columnas de diferentes tipos de datos, la función as.matrix() puede forzar todos los datos a un solo tipo, lo que puede no ser deseable en algunas situaciones.
+
+otu_table_filtered<- as.matrix(otu_table_filtered)
+require("zCompositions")
+require("compositions")
+
+
+# cmultRepl() para transformar el data frame df en una matriz de composición. Esta función multiplica cada valor en el data frame por un factor constante de modo que la suma de todos los valores en cada fila sea igual a 1. La matriz resultante tiene una fila para cada observación y una columna para cada variable en el data frame
+
+otu_table_filtered_transformed <- cmultRepl(otu_table_filtered)
+
+# la función clr() para transformar la matriz de composición resultante en una matriz de log-ratios utilizando el método log-ratio centrado. Esta transformación es comúnmente utilizada en análisis de composición para transformar los datos en un espacio lineal que se puede utilizar en análisis estadísticos estándar.
+
+otu_table_filtered_transformed_log <- clr(otu_table_filtered_transformed)
+
+dim(otu_table_filtered_transformed_log)
+
+
+
+meta_exp <- read_excel("/Users/sebastianbedoyamazo/Documents/siwa_git/Performance/df_metadata_age42.xlsx")
+samplesE267 <- unlist(meta_exp[meta_exp$projectid == 'E267', 'sampleid'])
+samplesE271 <- unlist(meta_exp[meta_exp$projectid == 'E271', 'sampleid'])
+samplesE345 <- unlist(meta_exp[meta_exp$projectid == 'E345', 'sampleid'])
+samplesE347 <- unlist(meta_exp[meta_exp$projectid == 'E347', 'sampleid'])
+
+
+#Extract the corresponding meta_table for the samples in abund_table
+#rownames(meta_exp) <- meta_exp$sampleid
+meta_exp <- meta_exp %>% column_to_rownames(var = "sampleid")
+meta_exp <- meta_exp[rownames(otu_table_filtered_transformed_log), ]
+rownames(otu_table_filtered_transformed_log)
+colnames(meta_exp)
+
+```
+
+```{r choose variables 1, include=FALSE}
+
+#When its ony one variable y just leave the c("") with onw variable.
+#You can use sel_env to specify the variables you want to use and sel_env_label to specify the labels for the pannel
+
+sel_vars <-
+  c(
+    "BW42",
+    "FCR0-42",
+    "FCR36-42",
+    "BWG0-42",
+    "BWG36-42"
+  )
+
+## Asi van a aparecer en el plot
+sel_vars_label <- list(
+  "BW42" = "BW (42 days)",
+    "FCR0-42" = "FCR (0-42 days)",
+    "FCR36-42" = "FCR (36-42 days)",
+    "BWG0-42" = "BWG (0-42 days)",
+    "BWG36-42" = "BWG (36-42 days)"
+  
+)
+
+sel_vars_label<-t(as.data.frame(sel_vars_label))
+sel_vars_label<-as.data.frame(sel_vars_label)
+colnames(sel_vars_label)<-c("Trans")
+
+
+#Now get a filtered table based on sel_env --> DEJAR SOLO SAMPLES CON METADATOS
+meta_exp_filtered<-meta_exp[,sel_vars]
+meta_exp_filtered <- as.data.frame(meta_exp_filtered)
+
+X <- otu_table_filtered_transformed_log
+X <- X[, order(colSums(X), decreasing = TRUE)]  #### REVISAAAAR CENTERED LOG RATIO TRANSFORM!!!! 
+dim(X) 
+
+#Extract list of top N Taxa
+N<-20
+otus_list<-colnames(X)[1:N]
+
+X <- data.frame(X[, colnames(X) %in% otus_list], check.names = FALSE)
+Y <- meta_exp_filtered
+dim(X)
+dim(Y)
+#Get grouping information
+groups_ <- meta_exp$samplelocation
+# #### Convertir las variables a numéricas
+Y$BW42 <- as.numeric(Y$BW42 )
+Y$'FCR0-42' <- as.numeric(Y$"FCR0-42")
+Y$'FCR36-42' <- as.numeric(Y$'FCR36-42')
+Y$'BWG0-42' <- as.numeric(Y$'BWG0-42' )
+Y$'BWG36-42' <- as.numeric(Y$'BWG36-42' )
+
+```
+
+```{r correlation method 1, include=FALSE}
+#Choose correlation method
+method<-"kendall"
+#method <- "spearman"
+#method <- "pearson"
+
+#Now calculate the correlation between individual Taxa and the environmental data
+
+df <- NULL
+for (i in colnames(X)) {
+  for (j in colnames(Y)) {
+    for (k in c("ileum", "cecum", "feces")) {
+      a <- X[groups_ == k, i, drop = F]
+      b <- Y[groups_ == k, j, drop = F]
+      tmp <- c(
+        i,
+        j,
+        cor(a[complete.cases(b), ], b[complete.cases(b), ],
+            use = "everything", method = method),
+        cor.test(a[complete.cases(b), ], b[complete.cases(b), ], method =
+                   method)$p.value,
+        k
+      )
+      if (is.null(df)) {
+        df <- tmp
+      }
+      else{
+        df <- rbind(df, tmp)
+      }
+    }
+  }
+}
+df<-data.frame(row.names=NULL,df)
+colnames(df)<-c("Taxa","Env","Correlation","Pvalue","Type")
+df$Pvalue<-as.numeric(as.character(df$Pvalue))
+df$AdjPvalue<-rep(0,dim(df)[1])
+df$Correlation<-as.numeric(as.character(df$Correlation))
+adjustment_label<-c("NoAdj","AdjEnvAndType","AdjTaxaAndType","AdjTaxa","AdjEnv")
+adjustment<-5
+
+for(i in unique(df$Env)){
+  sel<-df$Env==i
+  df$AdjPvalue[sel]<-p.adjust(df$Pvalue[sel],method="BH")
+}
+
+#Now we generate the labels for signifant values
+df$Significance <-
+  cut(
+    df$AdjPvalue,
+    breaks = c(-Inf, 0.01, 0.1, 0.2, Inf),
+    label = c("***", "**", "*", "")
+  )
+df<-df[complete.cases(df),]
+
+
+Env_labeller <- function(variable,value){
+  return(sel_vars_label[as.character(value),"Trans"])
+}
+
+df$label <- df$Taxa
+
+
+```
+
+
+Row
+-----------------------------------------------------------------------
+
+### FIGURE 16: Kendall correlation heatmap between microbial families and host genes. <br/> Families such as Sutterellaceae, Erysipelotcrichaceae, Eggerthellaceae, and Anaerovoracaceae are strongly associated with higher Il10 expression in the ileum.  
+
+
+```{r crear plot 1, include=TRUE,echo=FALSE, warning=FALSE, fig.dim = c(10, 6)}
+ 
+p <- ggplot(aes(x = Type, y = Taxa, fill = Correlation), data = df)
+
+p <-
+  p + geom_tile() + scale_fill_gradient2(low = "#2C7BB6", mid = "white", high =
+                                           "#D7191C")
+p <-
+  p + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5))
+
+p <-
+  p + geom_text(aes(label = Significance), color = "black", size = 3) + labs(y =
+                                                                               NULL, x = NULL, fill = method)
+p <-
+  p + facet_grid(
+    . ~ Env,
+    drop = TRUE,
+    scale = "free",
+    space = "free_x",
+    labeller = Env_labeller
+  )+ theme(text=element_text(size=10))
+  
+p
+```
