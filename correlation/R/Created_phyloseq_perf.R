@@ -5,10 +5,10 @@
 library(phyloseq)
 
 #####Open data#####
-input_dir<- "//Users/sebastianbedoyamazo/Documents/siwa_git/Performance/inputdata/"
-taxonomy <-read_excel("//Users/sebastianbedoyamazo/Documents/siwa_git/Performance/inputdata/taxonomy_test.xlsx")
-features <-read_excel("//Users/sebastianbedoyamazo/Documents/siwa_git/Performance/inputdata/otu_table_test.xlsx")
-metadata <- read_excel("//Users/sebastianbedoyamazo/Documents/siwa_git/Performance/inputdata/metadata_test.xlsx")
+input_dir<- "//Users/sebastianbedoyamazo/Documents/siwa_git/Performance/correlation/inputdata/"
+taxonomy <-read_excel("//Users/sebastianbedoyamazo/Documents/siwa_git/Performance/correlation/inputdata/taxonomy_test.xlsx")
+features <-read_excel("//Users/sebastianbedoyamazo/Documents/siwa_git/Performance/correlation/inputdata/otu_table_test.xlsx")
+metadata <- read_excel("//Users/sebastianbedoyamazo/Documents/siwa_git/Performance/correlation/inputdata/metadata_test.xlsx")
 
 
 #####Organize data#####
