@@ -6,10 +6,6 @@ output:
     orientation: rows
     vertical_layout: scroll
     source_code: embed
-    css: estilo.css
-    mathjax: NULL
-    self_contained: FALSE
-    logo: "Siwa-blanco-01.png"
     #runtime: shiny
     #navbar:
      # - { title: "About SIWA", href: "https://siwa.bio/" }
@@ -130,7 +126,6 @@ meta_expE345 <- filter(meta_exp, projectid == "E345")
 meta_expE347 <- filter(meta_exp, projectid == "E347")
 
 
-
 # run each time for every aggregate taxa (genus and species)
 grouped_genus = grouped
 grouped_genus$Taxa_aggre = "genus"
@@ -142,7 +137,7 @@ grouped_species$Taxa_aggre = "species"
 #rbind df aggregate_taxa_siwa by genus and species
 grouped_gen_spe = rbind(grouped_genus, grouped_species)
 
-
+"/Users/sebastianbedoyamazo/Library/CloudStorage/GoogleDrive-sebastian.bedoya@premexcorp.com/Mi unidad/siwa_shared/Analisis/Performance exploration/"
 
 
 write.csv(species_otu_table_filtered_transformed_log, file = "/Users/sebastianbedoyamazo/Library/CloudStorage/GoogleDrive-sebastian.bedoya@premexcorp.com/.shortcut-targets-by-id/1j_mPOvs6DPPqRINFw74_ARcBZ9HwkQpE/Performance exploration/corr_results/species_otu_table_filtered_transformed_log.csv", row.names = TRUE)
@@ -166,6 +161,8 @@ rownames(otu_table) <-
 #rownames(otu_table) #deben ser las samples
 ```
 
+# TRANSFORMATIONS 
+
 ```{r transformation 1, include=FALSE}
 #####transformation and filter for compositional data
 # calcula la proporción de ceros en cada columna de un data frame df. La función apply() se utiliza para aplicar una función a cada columna del data frame. La función que se aplica es df == 0, que compara cada valor en el data frame con cero y devuelve un vector lógico que indica si cada valor es igual a cero o no. El resultado de esta comparación es una matriz lógica con el mismo número de filas y columnas que el data frame.
@@ -173,6 +170,7 @@ rownames(otu_table) <-
 # Luego, se utiliza la función sum() junto con el argumento 2 de apply() para sumar los valores en cada columna de la matriz lógica, lo que da como resultado el número total de ceros en cada columna. Dividiendo este resultado por el número de filas en el data frame dim(df)[1], se obtiene la proporción de ceros en cada columna.
 # 
 # Finalmente, se asigna el resultado a un objeto llamado rowz. Por lo tanto, rowz será un vector que contiene la proporción de ceros en cada columna del data frame df.
+
 
 rowz<-apply(otu_table == 0, 2, sum)/dim(otu_table)[1] #sum over columns (OTUS)
 # dejar otus frecuentes, quitando los que están llenos de CEROS

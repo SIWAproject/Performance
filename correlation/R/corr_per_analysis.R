@@ -179,23 +179,33 @@ E347[-which(rownames(E347) == "projectid*"),][, c("n", "mean", "sd", "min", "max
 
 #relation between Genera Score and Performance correlation
 #select Genus and score, rename and filter genus in correlation table
+library(dplyr)
 genera_taxonomy_info_sc <- genera_taxonomy_info[, c("Genus", "Probiotic_potential")]
 genera_taxonomy_info_sc <- genera_taxonomy_info_sc %>% rename(Taxa = Genus)
+
 corr_analysis_info_genus <- merge(corr_analysis, genera_taxonomy_info_sc, by = "Taxa", all.x = TRUE)
 
 #complete genus correlation analysis
-genus_corr_analysis <- filter(corr_analysis_info_genus, Taxa_aggre == "genus")
+corr_analysis_info_genus <- filter(corr_analysis_info_genus, Taxa_aggre == "genus")
+x = corr_analysis_info_genus[complete.cases(corr_analysis_info_genus), ]
+x =x[x$Probiotic_potential < -3,]
 
 
 #filter by p-value
 genus_corr_analysis_filter <-  genus_corr_analysis[genus_corr_analysis$AdjPvalue < 0.05, ]
-
+dim(genus_corr_analysis_filter)
 #filter by repeated name
 genus_corr_analysis_filter_rep <- genus_corr_analysis_filter %>%
   group_by(Taxa) %>%
   filter(n() > 1)
-unique(genus_corr_analysis_filter_rep$Taxa)
 
+#### así se le pega una columna con el conteo de repeticiones
+# genus_corr_analysis_filter %>%
+#   group_by(Taxa) %>%
+#   mutate(n = n())
+
+unique(genus_corr_analysis_filter_rep$Taxa)
+genus_corr_analysis_filter
 
 
 # #split positive and negative correlation
@@ -208,8 +218,6 @@ unique(genus_corr_analysis_filter_rep$Taxa)
 #       "negative_cor"
 #     )
 #   )
-
-
 
 
 
@@ -250,27 +258,27 @@ sp_corr_analysis_filter_rep <- sp_corr_analysis_filter %>%
 X <- df_species_clr
 Y <- meta_exp
 
-f <- "Alistipes_finegoldii"
-p <- "BW42"
+bacteria <- "Alistipes_finegoldii"
+variable <- "BW42"
+
 
 #scatterplot 
 
 # Select columns from dataframes
 
-a <- X[, f, drop = F]
-b <- Y[, c( p, "SampleLocation", "projectid"), drop = F]
+a <- X[, bacteria, drop = F]
+b <- Y[, c( variable, "SampleLocation", "projectid"), drop = F]
 
 # merge with rownames
 a <- as.data.frame(a)
 b <- as.data.frame(b)
 b$SampleLocation <- as.factor(b$SampleLocation)
 b$projectid <- as.factor(b$projectid)
-df_merge <- merge(a, b, by = "row.names") %>% select(-1)
+df_merge <- merge(a, b, by = "row.names")
 colnames(df_merge) 
+unique(df_merge$projectid)
 
-
-
-ggplot(df_merge, aes(x = eval(as.symbol(f)), y = eval(as.symbol(p)), color = projectid)) +
+ggplot(df_merge, aes(x = eval(as.symbol(bacteria)), y = eval(as.symbol(variable)), color = projectid)) +
   facet_wrap(~ SampleLocation) +
   geom_smooth(method='lm', se = FALSE)+
   labs(x='Relative Abundace (CLR)', y='BWG (36-42 days)', title= "Lactobacillus ingluviei") +

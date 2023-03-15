@@ -3,18 +3,21 @@
 
 #####Load libraries#####
 library(phyloseq)
+library(tibble)
 
 #####Open data#####
-input_dir<- "//Users/sebastianbedoyamazo/Documents/siwa_git/Performance/correlation/inputdata/"
-taxonomy <-read_excel("//Users/sebastianbedoyamazo/Documents/siwa_git/Performance/correlation/inputdata/taxonomy_test.xlsx")
-features <-read_excel("//Users/sebastianbedoyamazo/Documents/siwa_git/Performance/correlation/inputdata/otu_table_test.xlsx")
-metadata <- read_excel("//Users/sebastianbedoyamazo/Documents/siwa_git/Performance/correlation/inputdata/metadata_test.xlsx")
-
+input_dir<- "/Users/sebastianbedoyamazo/Documents/siwa/siwa2022/performance/performance_df/pq_obj/"
+taxonomy <- read.table(paste0(input_dir,"taxonomy_E347.csv"), header=T, sep=",", check.names = F)
+features <- read.table(paste0(input_dir,"otu_table_E347.csv"), header=T, sep=",", check.names = F)
+metadata <- read.table(paste0(input_dir,"metadata_E347.csv"), header=T, sep=",", check.names = F) 
 
 #####Organize data#####
-metadata <- metadata %>% rename(SampleID = sampleid, AnimalID = animalid...3, SampleLocation = samplelocation, Treatment = Trt)
+metadata <- metadata %>% rename(SampleID = sampleid, SampleLocation = samplelocation, Treatment = Trt)
 taxonomy <- taxonomy %>% rename(otu = OTU)
 features <- features %>% rename(otu = OTU)
+
+#delete letter X from colnames
+colnames(features) <- gsub("X", "", colnames(features))
 
 #Organize metadata
 metadata <- metadata[metadata$SampleID %in% colnames(features),]
@@ -73,4 +76,4 @@ ntaxa(ODLEPobj)
 
 
 #####Save phyloseq object#####
-saveRDS(ODLEPobj, paste0(input_dir,"PhyloseqObject_perf.rds"))
+saveRDS(ODLEPobj, paste0(input_dir,"PhyloseqObject_E347.rds"))
