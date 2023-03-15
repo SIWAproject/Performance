@@ -10,6 +10,8 @@ library(ggpubr) #
 library(ggplot2) #
 library(plyr)
 library(multcompView)
+library(RColorBrewer)
+library(plotly)
 
 #####Load libraries correlations####
 library(ggplot2)
@@ -40,143 +42,256 @@ library(shiny)
 library(DT)
 library(stringr)
 library(rstatix)
-#library(microViz)
-library(lsr)
+library(patchwork)
 library(readxl)
 library(openxlsx)
+
+
+#library(microViz)
+library(lsr)
 
 ### summaries ###
 library(psych)
 
+
 #EAFIT surveillance tables (same for all reports)
 species_taxonomy_info <-read.csv("/Users/sebastianbedoyamazo/Documents/siwa_git/Reports/Version1.0/Input_data/species_metabolic_effects.csv",check.names = FALSE, sep=";")
 genera_taxonomy_info <- read.csv( "/Users/sebastianbedoyamazo/Documents/siwa_git/Reports/Version1.0/Input_data/genus_metabolic_effects.csv", check.names = FALSE, sep=";")
-broad_taxonomy_info <- read.csv("/Users/sebastianbedoyamazo/Documents/siwa_git/Reports/Version1.0/Input_data/broad_groups_metabolic_effects.csv", check.names = FALSE, sep=";")
 
 
 #open phyloseq object for extract performance data
-input_dir = "/Users/sebastianbedoyamazo/Documents/siwa_git/Performance/inputdata/"
+input_dir = "/Users/sebastianbedoyamazo/Documents/siwa_git/Performance/correlation/inputdata/"
 
 ODLEPobj <- readRDS(paste0(input_dir, "PhyloseqObject_perf.rds"))
 
-
+corr_analysis = read_excel("/Users/sebastianbedoyamazo/Documents/siwa_git/Performance/correlation/inputdata/corr_analysis.xlsx")
 #performances summary
+
+
+#plot analysis
+df_species_clr <-read.csv("/Users/sebastianbedoyamazo/Library/CloudStorage/GoogleDrive-sebastian.bedoya@premexcorp.com/.shortcut-targets-by-id/1j_mPOvs6DPPqRINFw74_ARcBZ9HwkQpE/Performance exploration/corr_results/species_otu_table_filtered_transformed_log.csv",check.names = FALSE, sep=",", row.names = 1)
+df_genus_clr <-read.csv("/Users/sebastianbedoyamazo/Library/CloudStorage/GoogleDrive-sebastian.bedoya@premexcorp.com/.shortcut-targets-by-id/1j_mPOvs6DPPqRINFw74_ARcBZ9HwkQpE/Performance exploration/corr_results/genus_otu_table_filtered_transformed_log.csv",check.names = FALSE, sep=",", row.names = 1)
+
+
+#metadata as.data.frame
 metadata <- as.data.frame(sample_data(ODLEPobj))
 meta_exp <- metadata
 colnames(meta_exp)
 
 
-#BOXPLOT by projectid
-ggplot(metadata, aes(x = projectid, y = BW42, fill = projectid)) +
-  geom_violin()  #geom_boxplot()+  #or geom_violin() +
-  #geom_jitter(shape=16, position=position_jitter())
-  
-ggplot(metadata, aes(x = projectid, y = FCR0_42, fill = projectid)) +
-  geom_violin()  #geom_boxplot()+  #or geom_violin() 
+#anova and tukey for performance and projects
+TukeyHSD(aov(meta_exp$BW42 ~ meta_exp$projectid))
+TukeyHSD(aov(meta_exp$BWG0_42 ~ meta_exp$projectid))
+TukeyHSD(aov(meta_exp$BWG36_42 ~ meta_exp$projectid))
+TukeyHSD(aov(meta_exp$FCR0_42 ~ meta_exp$projectid))
+TukeyHSD(aov(meta_exp$FCR36_42 ~ meta_exp$projectid))
 
-ggplot(metadata, aes(x = projectid, y = FCR36_42, fill = projectid)) +
-  geom_violin()  #geom_boxplot()+  #or geom_violin() 
 
-ggplot(metadata, aes(x = projectid, y = BWG0_42, fill = projectid)) +
-  geom_violin()  #geom_boxplot()+  #or geom_violin() 
 
-ggplot(metadata, aes(x = projectid, y = BWG36_42, fill = projectid)) +
-  geom_violin()  #geom_boxplot()+  #or geom_violin() 
+#boxplot perfomance ~ projects
+my_comparisons <- list( c("E345", "E347"), c("E347", "E267"), c("E267", "E271"),
+                        c("E345", "E267"),  c("E347", "E271"))
+p1 <- ggboxplot(meta_exp, x = "projectid", y = "BW42",
+                fill = "projectid")+ 
+  stat_compare_means(comparisons = my_comparisons)+ # Add pairwise comparisons p-value
+  stat_compare_means(method = "anova")+     # Add global p-value
+  stat_compare_means(label = "p.signif", method = "t.test",
+                     ref.group = ".all.") 
+#geom_jitter(position = position_nudge(x = -0.5))
 
+
+
+
+my_comparisons <- list( c("E345", "E347"), c("E347", "E267"), c("E267", "E271"),
+                        c("E345", "E267"),  c("E347", "E271"))
+p2 <- ggboxplot(meta_exp, x = "projectid", y = "BWG0_42",
+                fill = "projectid")+ 
+  stat_compare_means(comparisons = my_comparisons)+ # Add pairwise comparisons p-value
+  stat_compare_means(method = "anova")+     # Add global p-value
+  stat_compare_means(label = "p.signif", method = "t.test",
+                     ref.group = ".all.") 
+#geom_jitter(position = position_nudge(x = -0.5))
+
+
+my_comparisons <- list( c("E345", "E347"), c("E347", "E267"), c("E267", "E271"),
+                        c("E345", "E267"),  c("E347", "E271"))
+p3 <- ggboxplot(meta_exp, x = "projectid", y = "BWG36_42",
+                fill = "projectid")+ 
+  stat_compare_means(comparisons = my_comparisons)+ # Add pairwise comparisons p-value
+  stat_compare_means(method = "anova")+     # Add global p-value
+  stat_compare_means(label = "p.signif", method = "t.test",
+                     ref.group = ".all.") 
+#geom_jitter(position = position_nudge(x = -0.5))
+
+
+my_comparisons <- list( c("E345", "E267"), c("E267", "E271"), c("E345", "E271"))
+p4 <- ggboxplot(meta_exp, x = "projectid", y = "FCR0_42",
+                fill = "projectid")+ 
+  stat_compare_means(comparisons = my_comparisons)+ # Add pairwise comparisons p-value
+  stat_compare_means(method = "anova")+     # Add global p-value
+  stat_compare_means(label = "p.signif", method = "t.test",
+                     ref.group = ".all.") 
+#geom_jitter(position = position_nudge(x = -0.5))
+
+
+
+my_comparisons <- list( c("E345", "E347"), c("E347", "E267"), c("E267", "E271"),
+                        c("E345", "E267"),  c("E347", "E271"))
+p5 <- ggboxplot(meta_exp, x = "projectid", y = "FCR36_42",
+                fill = "projectid")+ 
+  stat_compare_means(comparisons = my_comparisons)+ # Add pairwise comparisons p-value
+  stat_compare_means(method = "anova")+     # Add global p-value
+  stat_compare_means(label = "p.signif", method = "t.test",
+                     ref.group = ".all.") 
+#geom_jitter(position = position_nudge(x = -0.5))
+
+
+# Unir los gráficos con patchwork
+plot_unique <- p1 + p2 + p3 + p4 + p5
+plot_unique <- plot_unique + plot_layout(ncol=3, nrow = 2)
+
+# Imprimir el gráfico unido
+plot_unique
 
 
 
 #summary by projectid
-meta_exp <- meta_exp[, c("projectid", "BW42", "FCR0_42", "FCR36_42", "BWG0_42", "BWG36_42")]
-summary_meta_exp <- describe.by(meta_exp, group = meta_exp$projectid)
+meta_exp_sum <- meta_exp[, c("projectid", "BW42", "FCR0_42", "FCR36_42", "BWG0_42", "BWG36_42")]
+summary_meta_exp <- describe.by(meta_exp_sum, group = meta_exp_sum$projectid)
 
 #tables by projectid
 E267 <- summary_meta_exp$E267
-E267 <- E267[, c("n", "mean", "sd", "min", "max")]
-E267 <- E267[-which(rownames(E267) == "projectid*"),]
+E267[-which(rownames(E267) == "projectid*"),][, c("n", "mean", "sd", "min", "max")]
 
 E271 <- summary_meta_exp$E271
-E271 <- E271[, c("n", "mean", "sd", "min", "max")]
-E271 <- E271[-which(rownames(E271) == "projectid*"),]
+E271[-which(rownames(E271) == "projectid*"),][, c("n", "mean", "sd", "min", "max")]
 
 E345 <- summary_meta_exp$E345
-E345 <- E345[, c("n", "mean", "sd", "min", "max")]
-E345 <- E345[-which(rownames(E345) == "projectid*"),]
+E345[-which(rownames(E345) == "projectid*"),][, c("n", "mean", "sd", "min", "max")]
 
 
 E347 <- summary_meta_exp$E347
-E347 <- E347[, c("n", "mean", "sd", "min", "max")]
-E347 <- E347[-which(rownames(E347) == "projectid*"),]
+E347[-which(rownames(E347) == "projectid*"),][, c("n", "mean", "sd", "min", "max")]
 
-options(digits = 2)
+
 
 
 
 #relation between Genera Score and Performance correlation
-genera_taxonomy_info <- genera_taxonomy_info[, c("Genus", "Probiotic_potential")]
-genera_taxonomy_info <- genera_taxonomy_info %>% rename(Taxa = Genus)
+#select Genus and score, rename and filter genus in correlation table
+genera_taxonomy_info_sc <- genera_taxonomy_info[, c("Genus", "Probiotic_potential")]
+genera_taxonomy_info_sc <- genera_taxonomy_info_sc %>% rename(Taxa = Genus)
+corr_analysis_info_genus <- merge(corr_analysis, genera_taxonomy_info_sc, by = "Taxa", all.x = TRUE)
 
-genus_list <- as.list(genera_taxonomy_info$Taxa)
-analysis_probiotic_genus <- subset(corr_analysis, Taxa %in% genus_list)
+#complete genus correlation analysis
+genus_corr_analysis <- filter(corr_analysis_info_genus, Taxa_aggre == "genus")
 
 
-merged_genus_corr <- merge(corr_analysis_probiotic, genera_taxonomy_info, by = "Taxa")
+#filter by p-value
+genus_corr_analysis_filter <-  genus_corr_analysis[genus_corr_analysis$AdjPvalue < 0.05, ]
+
+#filter by repeated name
+genus_corr_analysis_filter_rep <- genus_corr_analysis_filter %>%
+  group_by(Taxa) %>%
+  filter(n() > 1)
+unique(genus_corr_analysis_filter_rep$Taxa)
 
 
-merged_genus_corr_filter <-  merged_genus_corr[merged_genus_corr$AdjPvalue < 0.05, ]
 
-merged_genus_corr_filter <- split(merged_genus_corr_filter, f = ifelse(merged_genus_corr_filter$Correlation >= 0, "positive_cor", "negative_cor"))
-merged_genus_corr_filter$negative_cor
-merged_genus_corr_filter$positive_cor
-merged_genus_corr_filter_neg <- merged_genus_corr_filter$negative_cor
-merged_genus_corr_filter_pos <- merged_genus_corr_filter$positive_cor
+# #split positive and negative correlation
+# merged_genus_corr_filter <-
+#   split(
+#     merged_genus_corr_filter,
+#     f = ifelse(
+#       merged_genus_corr_filter$Correlation >= 0,
+#       "positive_cor",
+#       "negative_cor"
+#     )
+#   )
+
+
 
 
 
 
 #relation between Species Score and Performance correlation
-species_taxonomy_info <- species_taxonomy_info[, c("Species", "Probiotic_potential")]
-species_taxonomy_info <- species_taxonomy_info %>% rename(Taxa = Species)
+species_taxonomy_info_sc <- species_taxonomy_info[, c("Species", "Probiotic_potential")]
+species_taxonomy_info_sc <- species_taxonomy_info_sc %>% rename(Taxa = Species)
 
-species_list_corr <- as.list(corr_analysis$Taxa)
-
-
-species_list_tax <- as.list(species_taxonomy_info$Taxa)
-#revisar algunas species 
-corr_analysis %>% filter(str_detect(Taxa, "sp."))
+#complete genus correlation analysis
+corr_analysis_info_sp <- filter(corr_analysis, Taxa_aggre == "species")
 
 #cambiar " " por "_"
-species_list_tax <- lapply(species_list_tax, function(x) gsub(" ", "_", x))
+species_taxonomy_info_sc$Taxa <- gsub(" ", "_", species_taxonomy_info_sc$Taxa)
 
 
+colnames(corr_analysis_info_sp)
+colnames(species_taxonomy_info_sc)
+dim(corr_analysis_info_sp)
+dim(species_taxonomy_info_sc)
 
-analysis_probiotic_species <- subset(corr_analysis, Taxa %in% species_list_tax)
-as.list(unique(analysis_probiotic_species$Taxa))
+sp_corr_analysis <- merge(corr_analysis_info_sp, species_taxonomy_info_sc, by = "Taxa", all.x = TRUE)
 
-
-species_taxonomy_info <- species_taxonomy_info %>% mutate(Taxa = gsub(" ", "_", Taxa))
-merged_species_corr <- merge(analysis_probiotic_species, species_taxonomy_info, by = "Taxa")
-as.list(unique(merged_species_corr$Taxa))
-
-merged_species_corr_filter <-  merged_species_corr[merged_species_corr$AdjPvalue < 0.20, ]
-
-
-merged_species_corr_filter <- split(merged_species_corr_filter, f = ifelse(merged_species_corr_filter$Correlation >= 0, "positive_cor", "negative_cor"))
-merged_species_corr_filter$negative_cor
-merged_species_corr_filter$positive_cor
+#filter by p-value
+sp_corr_analysis_filter <-  sp_corr_analysis[sp_corr_analysis$AdjPvalue < 0.10, ]
+unique(sp_corr_analysis_filter$Taxa)
 
 
-
-merged_species_corr_filter_neg <- merged_species_corr_filter$negative_cor[, c("Taxa", "Env", "Correlation", "AdjPvalue", "projectid","Probiotic_potential")]
-merged_species_corr_filter_pos <- merged_species_corr_filter$positive_cor[, c("Taxa", "Env", "Correlation", "AdjPvalue", "projectid","Probiotic_potential")]
+#filter by repeated name
+sp_corr_analysis_filter_rep <- sp_corr_analysis_filter %>%
+  group_by(Taxa) %>%
+  filter(n() > 1)
 
 
 
 
-#filter by Species in corr df
-corr_analysis_species <- filter(corr_analysis, Taxa_aggre == "species")
-corr_analysis_species <-corr_analysis_species[corr_analysis_species$AdjPvalue < 0.05, ]
-corr_analysis_species_list <- as.list(unique(corr_analysis_species$Taxa))
+
+#some graphs
+X <- df_species_clr
+Y <- meta_exp
+
+f <- "Alistipes_finegoldii"
+p <- "BW42"
+
+#scatterplot 
+
+# Select columns from dataframes
+
+a <- X[, f, drop = F]
+b <- Y[, c( p, "SampleLocation", "projectid"), drop = F]
+
+# merge with rownames
+a <- as.data.frame(a)
+b <- as.data.frame(b)
+b$SampleLocation <- as.factor(b$SampleLocation)
+b$projectid <- as.factor(b$projectid)
+df_merge <- merge(a, b, by = "row.names") %>% select(-1)
+colnames(df_merge) 
+
+
+
+ggplot(df_merge, aes(x = eval(as.symbol(f)), y = eval(as.symbol(p)), color = projectid)) +
+  facet_wrap(~ SampleLocation) +
+  geom_smooth(method='lm', se = FALSE)+
+  labs(x='Relative Abundace (CLR)', y='BWG (36-42 days)', title= "Lactobacillus ingluviei") +
+  theme(plot.title = element_text(hjust=0.5, size=15, face='bold')) +
+  geom_point() +
+  labs(color = "Project ID")
+
+
+
+df_filtered <- df_merge %>% 
+  filter(SampleLocation == "cecum" & projectid == "E271")
+
+ggplot(df_filtered, aes(x = eval(as.symbol(f)), y = eval(as.symbol(p)), color = SampleLocation)) +
+  facet_wrap(~ projectid) +
+  geom_smooth(method='lm', se = FALSE)+
+  labs(x='Relative Abundace (CLR)', y='BW (42 days)', title= "Alistipes_finegoldii") +
+  theme(plot.title = element_text(hjust=0.5, size=15, face='bold')) +
+  geom_point() +
+  labs(color = "Project ID")
+
+
 
 
 
