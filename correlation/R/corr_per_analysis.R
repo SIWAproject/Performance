@@ -301,5 +301,47 @@ ggplot(df_filtered, aes(x = eval(as.symbol(f)), y = eval(as.symbol(p)), color = 
 
 
 
+```{r correlation method 1, include=FALSE}
+df <- filter(corr_analysis_filter, Taxa_aggre == "species")
+
+
+Env_labeller <- function(variable,value){
+  return(sel_vars_label[as.character(value),"Trans"])
+}
+
+df$label <- df$Taxa
+
+method="pearson"
+
+```
+
+
+```{r crear plot 1, include=TRUE,echo=FALSE, warning=FALSE, fig.dim = c(10, 6)}
+
+p <- ggplot(aes(x = Type, y = Taxa, fill = Correlation), data = df)
+
+p <-
+  p + geom_tile() + scale_fill_gradient2(low = "#2C7BB6", mid = "white", high =
+                                           "#D7191C")
+                                         p <-
+                                           p + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5))
+                                         
+                                         p <-
+                                           p + geom_text(aes(label = Significance), color = "black", size = 3) + labs(y =
+                                                                                                                        NULL, x = NULL, fill = method)
+                                         p <-
+                                           p + facet_grid(
+                                             . ~ Env,
+                                             drop = TRUE,
+                                             scale = "free",
+                                             space = "free_x",
+                                             labeller = Env_labeller
+                                           )+ theme(text=element_text(size=9))
+                                         
+                                         p
+                                         ```
+
+
+
 
 
