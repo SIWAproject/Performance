@@ -1,6 +1,3 @@
-
-
-
 library(phyloseq)
 library(zCompositions)
 library(compositions)
@@ -11,7 +8,7 @@ source("/Users/sebastianbedoyamazo/Documents/siwa_git/Methods-review/correlation
 
 phyl_dir <- "/Users/sebastianbedoyamazo/Documents/siwa_git/Performance/performance_df/pq_obj/"
 
-exp <- "E347"
+exp <- "E271"
 
 ODLEPobj <- readRDS(paste0(phyl_dir, paste0("PhyloseqObject_", exp,".rds")))
 ### filtrar singletons: otus solo en 1 muestra 
@@ -25,9 +22,9 @@ otu_table <- as.matrix(pseq_genus)
 otu_table <- t(otu_table)
 rowz<-apply(otu_table == 0, 2, sum)/dim(otu_table)[1] #sum over columns (OTUS)
 # dejar otus frecuentes, quitando los que están llenos de CEROS
-p <- which(rowz>0.99)
+p <- which(rowz>0.90)
 otu_table_filtered <-otu_table[, -p]
-
+colnames(otu_table_filtered)
 ### transformation 
 otu_table_filtered_transformed <- cmultRepl(otu_table_filtered)
 otu_table_filtered_transformed_log <- clr(otu_table_filtered_transformed)
@@ -53,12 +50,15 @@ for (col in sel_vars){
   Y[[col]] <- as.numeric(Y[[col]])
 }
 
-corr_exp_genus <- correlation_siwa(X, Y, groups_,  method="pearson")
-corr_exp_genus$projectid <- exp
+corr_exp <- correlation_siwa(X, Y, groups_,  method="pearson")
+corr_exp$projectid <- exp
+unique(corr_exp$Taxa)
+subset(corr_exp, Taxa == "Alistipes_finegoldii")
+
 
 f = paste0(phyl_dir, paste0("CorrTableSp_", exp,".rds"))
 f
-saveRDS(corr_exp_genus, file=f)
+saveRDS(corr_exp, file=f)
 
 
 
