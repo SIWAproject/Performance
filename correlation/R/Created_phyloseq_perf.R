@@ -4,43 +4,52 @@
 #####Load libraries#####
 library(phyloseq)
 library(tibble)
+library(dplyr)
 
 #####Open data#####
-input_dir<- "/Users/sebastianbedoyamazo/Documents/siwa/siwa2022/performance/performance_df/pq_obj/"
-taxonomy <- read.table(paste0(input_dir,"taxonomy_E347.csv"), header=T, sep=",", check.names = F)
-features <- read.table(paste0(input_dir,"otu_table_E347.csv"), header=T, sep=",", check.names = F)
-metadata <- read.table(paste0(input_dir,"metadata_E347.csv"), header=T, sep=",", check.names = F) 
+input_dir<- "/Users/sebastianbedoyamazo/Documents/siwa_git/performance/performance_df/pq_obj/"
+taxonomy <- read.table(paste0(input_dir,"taxonomy_broiler.csv"), header=T, sep=",", check.names = F)
+features <- read.table(paste0(input_dir,"otu_table_broiler.csv"), header=T, sep=",", check.names = F)
+metadata <- read.table(paste0(input_dir,"metadata_broiler.csv"), header=T, sep=",", check.names = F) 
 
 #####Organize data#####
-metadata <- metadata %>% rename(SampleID = sampleid, SampleLocation = samplelocation, Treatment = Trt)
-taxonomy <- taxonomy %>% rename(otu = OTU)
-features <- features %>% rename(otu = OTU)
+#check repeated columns
+colnames(metadata)
+#metadata <- metadata[ , -8]
+#metadata <- metadata %>% rename(SampleID = sampleid, SampleLocation = samplelocation, Treatment = Trt)
+# taxonomy <- taxonomy %>% rename(OTU = otu)
+# features <- features %>% rename(OTU = otu)
 
-#delete letter X from colnames
-colnames(features) <- gsub("X", "", colnames(features))
+# #delete letter X from colnames
+# colnames(features) <- gsub("X", "", colnames(features))
 
 #Organize metadata
 metadata <- metadata[metadata$SampleID %in% colnames(features),]
 metadata$SampleLocation <- as.factor(metadata$SampleLocation)
-metadata$Treatment <- as.factor(metadata$Treatment)
+metadata$Treatment <- as.factor(metadata$Trt)
 
 #Make OTUs row names in otutable and taxo 
-metadata <- metadata %>% 
-  tibble::column_to_rownames(var = "SampleID") %>% 
-  tibble::add_column(SampleID = rownames(.), .before = 1)
+rownames(metadata) <- metadata$SampleID
+
+
+# metadata <- metadata %>% 
+#   tibble::column_to_rownames(var = "SampleID") %>% 
+#   tibble::add_column(SampleID = rownames(.), .before = 1)
 
 # features <- features %>% 
 #   tibble::column_to_rownames(var = "OTU") %>% 
 #   tibble::add_column(OTU = rownames(.), .before = 1)
 
 
-features <- features %>% column_to_rownames(var = "otu")
+features <- features %>% column_to_rownames(var = "OTU")
 # dim(features)
 
 
-taxonomy <- taxonomy %>% 
-  tibble::column_to_rownames(var = "otu") %>% 
-  tibble::add_column(otu = rownames(.), .before = 1)
+# taxonomy <- taxonomy %>% 
+#   tibble::column_to_rownames(var = "OTU") %>% 
+#   tibble::add_column(otu = rownames(.), .before = 1)
+
+taxonomy <- taxonomy %>% column_to_rownames(var = "OTU")
 
 
 taxonomy <- taxonomy[order(row.names(taxonomy)), ]
@@ -76,4 +85,8 @@ ntaxa(ODLEPobj)
 
 
 #####Save phyloseq object#####
-saveRDS(ODLEPobj, paste0(input_dir,"PhyloseqObject_E347.rds"))
+exp <-"broiler"
+f = paste0(input_dir, paste0("PhyloseqObject_", exp,".rds"))
+f
+saveRDS(ODLEPobj, file=f)
+
